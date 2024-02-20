@@ -23,13 +23,15 @@ PRIVATE_KEY=
 ETHERSCAN_API_KEY=
 ```
 
-You will need to deploy the `OevSearcherMulticallV1` on `ETH Sepolia` in order for your wallet to be able to update the price feeds on ETH Sepolia. This smart contract will allow you to bulk multiple transactions in a single call, such as Updating the Price Feed, liquididating a position and then doing something with this value gained. (There is no need to modify this smart contract).  If you would like to learn more about mulitCall, read here.
+## Deploy Multicall Contract on Sepolia
+You will need to deploy the `OevSearcherMulticallV1` on `ETH Sepolia` in order for your wallet to be able to update the price feeds on ETH Sepolia. This smart contract will allow you to bulk multiple transactions in a single call, such as Updating the Price Feed, liquididating a position and then doing something with this value gained. (`There is no need to modify this smart contract`).  If you would like to learn more about mulitCall, read [here](https://github.com/mds1/multicall).
 
 To deploy the `OevSearcherMulticallV1` smart contract using the deploy script.
 ```
 npx hardhat run scripts/deploy.js
 ```
 
+## Making a Bid
 In order to make a bid in the OEV Auction house.  We must deposit our OEV network ETH into the auction contract.  We call the deposit function on the OEV auction house contract.
 ```
 npx hardhat run scripts/deposit.js
@@ -38,9 +40,9 @@ You will see a console log of the transaction hash and a notice that the deposit
 
 Once this is completed, we are now ready to request to make a bid in the auctions.
 
-There are two ways to make the bid.  A bid without an expiration time and one with an expiration time (done this this example).
+There are two ways to make the bid.  A bid `without an expiration time` and one with an `expiration time` (done this this example).
 
-In the `auctionHouse` Contract it takes in as set of parameters
+In the `auctionHouse` contract it takes in as set of parameters
 ```
         bytes32 bidTopic,
         uint256 chainId,
@@ -64,6 +66,8 @@ In the `auctionHouse` Contract it takes in as set of parameters
 
 - The `expirationTimestamp` is how long you are willing to keep this bid.
 
+### Encoding our arguments
+#### Bid Topic (bytes32)
 
 In order to get the correct format for our `bidTopic` we created the following function to pass in our chainId and address we want to update.
 ```
@@ -71,10 +75,15 @@ const getBidTopic = (chainId, proxyAddress) => {
   return keccak256(solidityPacked(["uint256", "address"], [BigInt(chainId), proxyAddress]));
 };
 ```
-
+#### Bid Details (bytes)
 To format our `bidDetails` this function takes in all the details of our bid setup.  This allows us to pass our arguments through and return it in bytes.  
 
-The `bidDetails` contains all the details in our bid. The price feed address we want updated (`proxyAddress`), Greater or Lower than the price we want to update at (`condition`), the price value at which we want to update (`condition value`), what address will the update be coming from (`updateAddress`), random padding(`randomPadding`).
+The `bidDetails` contains all the details in our bid. 
+- The price feed address we want updated (`proxyAddress`)
+- Greater or Lower than the price we want to update at (`condition`) 
+- The price value at which we want to update (`condition value`) 
+- What address will the update be coming from (`updateAddress`)
+- Random padding(`randomPadding`).
 ```
 const getBidDetails = (proxyAddress, condition, conditionValue, updaterAddress, randomPadding) => {
   const abiCoder = new AbiCoder();
@@ -105,6 +114,7 @@ const bidTopic = getBidTopic(
     hexlify(randomBytes(32))                    
   );
 ```
+#### Placing the Bid
 Once we have our `bidTopic` and `bidDetials` encoded in variables, we can now place them in our bid setup:
 ```
 const tx = await auctionHouse.placeBidWithExpiration(
@@ -211,10 +221,13 @@ const multiTx = await OevSearcherMulticallV1.externalMulticallWithValue(
   );
 ```
 Once the transaction has completed, we have have updated the price feed.  We can verify the pricefeed has updated by checking the event logs of our `OevSearcherMultivcallV1` contract's data section.  `value` and `timestamp` should match with the latest read update of the price feed proxy.  In this example, we should be able to read the WBTC/USD feed on Sepolia and read #4 function `read`.  The values should be the equal.
+The auction and price update is completed.
 
-To run the `submit_bid_and_update` script, remember to update the following constants:
+
+#### To Run this process
+The `submit_bid_and_update` script is a complete run of the bid and price update process, remember to update the following constants:
 ```
-OUR_DEPLOYED_MULTICALL_CONTRACT_ADDRESS = "Your deployed contract address";
+OUR_DEPLOYED_MULTICALL_CONTRACT_ADDRESS = "Your deployed contract address on Sepolia";
 const PRICE = parseEther("52605");                 
 const GREATER_OR_LOWER = "LTE";    
 const BID_AMOUNT = parseEther("0.01");                                               
