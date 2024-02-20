@@ -103,7 +103,7 @@ const bidTopic = getBidTopic(
     hexlify(randomBytes(32))                    
   );
 ```
-Now that we have our `bidTopic` and `bidDetials` encoded in variables, we can now place them in our bid setup:
+Once we have our `bidTopic` and `bidDetials` encoded in variables, we can now place them in our bid setup:
 ```
 const tx = await auctionHouse.placeBidWithExpiration(
     bidTopic,                                     
