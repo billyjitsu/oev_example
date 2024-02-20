@@ -14,6 +14,8 @@ The bridge page also has an `Add to Metamask` option to easily add the chain to 
 
 Once the bridging is complete, you can check your wallet to verify that you have some ETH on the OEV network.
 
+Want the TLDR? Click [here](#tldr)
+
 ## Getting Started
 
 Update .env file with your personal details:
@@ -259,7 +261,7 @@ npx hardhat run scripts/deploy.js
 ```
 npx hardhat run scripts/deposit.js
 ```
-4. Update the following information in the `submit_bid_and_update.js` script
+4. Update the following with your custom information in the `submit_bid_and_update.js` script
 ```
 OUR_DEPLOYED_MULTICALL_CONTRACT_ADDRESS = "Your deployed contract address on Sepolia";
 const PRICE = parseEther("52605");                 
