@@ -224,3 +224,7 @@ Then
 ```
 npx hardhat run scripts/submit_bid_and_update.js
 ```
+
+## Flow of the Auction Process
+
+![OEV Flow](images/flow.png "OEV Flow")
