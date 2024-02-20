@@ -91,7 +91,7 @@ const placeBidWithExpiration = async () => {
   /////// Next Section ////////
   /////// Check Bid Status ////////
 
-  // Encode our bidding details to check on the auctioneer if our bid is awarded
+  // Encode our bidding details to check on the auctionHouse if our bid is awarded
   const bidId = keccak256(
     solidityPacked(
       ["address", "bytes32", "bytes32"],

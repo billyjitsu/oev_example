@@ -1,4 +1,4 @@
-# API3 - OEV SEARCHER BOT
+# OEV SEARCHER BOT
 
 This repo takes you though setting up and executing a price feed searcher bot on the OEV Network allowing you to update a price feed on the ETH Sepolia test network. 
 
@@ -12,7 +12,7 @@ The bridge page also has an `Add to Metamask` option to easily add the chain to 
 
 Once the bridging is complete, you can check your wallet to verify that you have some ETH on the OEV network.
 
-Getting Started:
+## Getting Started
 
 Update .env file with your personal details:
 ```
@@ -23,7 +23,7 @@ ETHERSCAN_API_KEY=
 
 You will need to deploy the `OevSearcherMulticallV1` on `ETH Sepolia` in order for your wallet to be able to update the price feeds on ETH Sepolia. This smart contract will allow you to bulk multiple transactions in a single call, such as Updating the Price Feed, liquididating a position and then doing something with this value gained. (There is no need to modify this smart contract).  If you would like to learn more about mulitCall, read here.
 
-To deploy the OevSearcherMulticallV1 smart contract using the deploy script.
+To deploy the `OevSearcherMulticallV1` smart contract using the deploy script.
 ```
 npx hardhat run scripts/deploy.js
 ```
@@ -38,7 +38,7 @@ Once this is completed, we are now ready to request to make a bid in the auction
 
 There are two ways to make the bid.  A bid without an expiration time and one with an expiration time (done this this example).
 
-In the AuctionHouse Contract it takes in as set of parameters
+In the `auctionHouse` Contract it takes in as set of parameters
 ```
         bytes32 bidTopic,
         uint256 chainId,
@@ -63,12 +63,121 @@ In the AuctionHouse Contract it takes in as set of parameters
 - The `expirationTimestamp` is how long you are willing to keep this bid.
 
 
-Try running some of the following tasks:
+In order to get the correct format for our `bidTopic` we created the following function to pass in our chainId and address we want to update.
+```
+const getBidTopic = (chainId, proxyAddress) => {
+  return keccak256(solidityPacked(["uint256", "address"], [BigInt(chainId), proxyAddress]));
+};
+```
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
+To format our `bidDetails` this function takes in all the details of our bid setup.  This allows us to pass our arguments through and return it in bytes.  
+
+The `bidDetails` contains all the details in our bid. The price feed address we want updated (`proxyAddress`), Greater or Lower than the price we want to update at (`condition`), the price value at which we want to update (`condition value`), what address will the update be coming from (`updateAddress`), random padding(`randomPadding`).
+```
+const getBidDetails = (proxyAddress, condition, conditionValue, updaterAddress, randomPadding) => {
+  const abiCoder = new AbiCoder();
+  const BID_CONDITIONS = [
+    { onchainIndex: 0n, description: "LTE" },  // Less or equal than the proposed value
+    { onchainIndex: 1n, description: "GTE" },  // Greater or equal than the proposed value
+  ];
+  const conditionIndex = BID_CONDITIONS.findIndex((c) => c.description === condition);
+  return abiCoder.encode(
+    ["address", "uint256", "int224", "address", "bytes32"],
+    [proxyAddress, conditionIndex, conditionValue, updaterAddress, randomPadding]
+  );
+};
+```
+Now that we have these functions prepared, we can now setup variables that will hold our encoded details in the following:
+
+```
+const bidTopic = getBidTopic(
+    CHAIN_ID,                                                             
+    WBTC_USD_PROXY_ADDRESS                        
+  );
+
+  const bidDetails = getBidDetails(
+    WBTC_USD_PROXY_ADDRESS,                       
+    GREATER_OR_LOWER,                             
+    PRICE,                                        
+    OUR_DEPLOYED_MULTICALL_CONTRACT_ADDRESS,      
+    hexlify(randomBytes(32))                    
+  );
+```
+Now that we have our `bidTopic` and `bidDetials` encoded in variables, we can now place them in our bid setup:
+```
+const tx = await auctionHouse.placeBidWithExpiration(
+    bidTopic,                                     
+    CHAIN_ID,                                    
+    BID_AMOUNT,                                   
+    bidDetails,                                   
+    parseEther("0"),                              
+    parseEther("0"),                              
+    Math.floor(Date.now() / 1000) + 60 * 60 * 12   // 12 hours from now
+  );
+```
+Once the transaction has completed, your bid has officially been place an now we must listen to see if our bid has won.
+
+## How long does it take for a bid to be one?
+
+## Listening to the auction events
+At anytime, we can contiously check in on the contract to our bids status.  The `auctionHouse` contract has a function call `bids` that will take the encoded version of our "bidId" which is an encoding of what wallet made the bid (the public address of our signer), the bidTopic (which we have already encoded), and the keccak256 of our bidDetails.
+
+```
+const bidId = keccak256(
+    solidityPacked(
+      ["address", "bytes32", "bytes32"],
+      [
+        PUBLIC_ADDRESS_OF_THE_BIDDER,             
+        bidTopic,                                 
+        keccak256(bidDetails),                   
+      ]
+    )
+  );
+```
+We can then pass in our `bidId` into the contract and see what return we get
+```
+ const bid = await auctionHouse.bids(bidId);
+  if (bid[0] === 2n) {
+    console.log("Bid is awarded");
+  }
+```
+The results will return the array of four items.
+- [0] BidStatus - If the Value is `2` your bid has won
+- [1] Expiration Timestamp - when this expires
+- [2] Collateral Amount - In testnet this is 0
+- [3] Fee Amount - In testnet this is 0
+
+This can be can be requested continuously throughout the auction period or until the `bidId` has expired.
+
+## Listening to the Awarded Bid
+After submitting the transaction, you can also do a listen on event listener to watch for the `AwardedBid` event.
+
+The awarded bid event will have details and signature allowances for you to update the proxy address price feed on ETH Sepolia network.  This will be in the `awardDetails` of the event.  In the listener, we are listening for the `AwardedBid` event. If the winning bidder matches our bidId, we bring in the transaction details into our `awardedTransaction` variable.
+
+```
+const awardedTransaction = await new Promise((resolve, reject) => {
+    auctionHouse.on(
+      "AwardedBid",
+      (bidder, bidTopic, awardBidId, awardDetails, bidderBalance) => {
+        if (bidId === awardBidId) {
+          auctionHouse.removeAllListeners("AwardedBid");
+          resolve(awardDetails); 
+        }
+      }
+    );
+  });
+
+```
+## Updating the oracle on the ETH Sepolia Network
+
+Once we have one the bid and have received the `awardedTransaction` details, we can now update the price feed on the ETH Sepolia network.  
+```
+const multiTx = await OevSearcherMulticallV1.externalMulticallWithValue(
+    [API3SERVER_V1_CONTRACT_ADDRESS],         
+    [awardedTransaction],                     
+    [BID_AMOUNT],                             
+    {
+      value: BID_AMOUNT,                      
+    }
+  );
 ```
