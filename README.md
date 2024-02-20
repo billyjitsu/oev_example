@@ -117,7 +117,9 @@ const tx = await auctionHouse.placeBidWithExpiration(
 ```
 Once the transaction has completed, your bid has officially been place an now we must listen to see if our bid has won.
 
-## How long does it take for a bid to be one?
+## Length of auctions
+
+The auctionHouse contract is listening to offchain updates of price feeds constantly, updates can happen every second up to possibly 30 seconds 
 
 ## Listening to the auction events
 At anytime, we can contiously check in on the contract to our bids status.  The `auctionHouse` contract has a function call `bids` that will take the encoded version of our "bidId" which is an encoding of what wallet made the bid (the public address of our signer), the bidTopic (which we have already encoded), and the keccak256 of our bidDetails.
@@ -171,6 +173,31 @@ const awardedTransaction = await new Promise((resolve, reject) => {
 ## Updating the oracle on the ETH Sepolia Network
 
 Once we have one the bid and have received the `awardedTransaction` details, we can now update the price feed on the ETH Sepolia network.  
+
+We will need to setup a contract object for the `OevSearcherMulticallV1` contract we deployed to Sepolia (the contract we deployed from out `deploy.js` script)
+```
+  const provider = new JsonRpcProvider("https://gateway.tenderly.co/public/sepolia");
+  const sepoliaWallet = new Wallet(privateKey, provider);
+
+  const OevSearcherMulticallV1 = new Contract(
+    OUR_DEPLOYED_MULTICALL_CONTRACT_ADDRESS,        
+    [
+      "function externalMulticallWithValue(address[] calldata targets, bytes[] calldata data, uint256[] calldata values) external payable returns (bytes[] memory returndata)",
+    ],
+    sepoliaWallet
+  );
+
+```
+Details about multicall contract:  This contract allows us to bulk multiple transactions into a single call.  This is important to use because we want to be able to capitalize on our transaction updating the price feed.  This could be a liquidation event, or getting an exact value on an options expiration.  The way the multicall works is it takes in an array of 3 values:
+- Address - Contract Addresses - The contract address of which functions we want to call
+- Bytes - Encoded Function Details - What do we want to call on the contract (encoded)
+- Uint256 - Value - The amount of ETH Value you are passing
+
+*Note - do not confuse the two `BID_AMOUNT` declarations.  One is declaring the value of what will be passed in, the other is actually sending the ETH to the contract:
+`function([args1], [args2], [args3], {value: BID_AMOUNT})`
+
+In our function call, we will be passing in the API3SERVER_V1 contract address that handles the updates of the proxy address of the feeds.  The second argument with be our encoded awardedTransaction details, which has all the information that will sign off on our request to update the price feed and the third argument is the value that we won the auction bid with and making sure we are sending that over on the Sepolia Network.
+
 ```
 const multiTx = await OevSearcherMulticallV1.externalMulticallWithValue(
     [API3SERVER_V1_CONTRACT_ADDRESS],         
@@ -180,4 +207,18 @@ const multiTx = await OevSearcherMulticallV1.externalMulticallWithValue(
       value: BID_AMOUNT,                      
     }
   );
+```
+Once the transaction has completed, we have have updated the price feed.  We can verify the pricefeed has updated by checking the event logs of our `OevSearcherMultivcallV1` contract's data section.  `value` and `timestamp` should match with the latest read update of the price feed proxy.  In this example, we should be able to read the WBTC/USD feed on Sepolia and read #4 function `read`.  The values should be the equal.
+
+To run the `submit_bid_and_update` script, remember to update the following constants:
+```
+OUR_DEPLOYED_MULTICALL_CONTRACT_ADDRESS = "Your deployed contract address";
+const PRICE = parseEther("52605");                 
+const GREATER_OR_LOWER = "LTE";    
+const BID_AMOUNT = parseEther("0.01");                                               
+const PUBLIC_ADDRESS_OF_THE_BIDDER = "Your public wallet address"; 
+```
+Then
+```
+npx hardhat run scripts/submit_bid_and_update.js
 ```

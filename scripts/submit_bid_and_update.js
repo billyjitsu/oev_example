@@ -20,12 +20,13 @@ const OEV_AUCTION_HOUSE_CONTRACT_ADDRESS = "0x7597985630674dA4D62Ae60ad4D10E40bb
 const CHAIN_ID = 11155111;                                                                // ETH Sepolia chain ID                    
 const WBTC_USD_PROXY_ADDRESS = "0xa8cea58ab9060600e94bb28b2c8510b73171b55c";              // ETH Sepolia WBTC/USD price feed
 const API3SERVER_V1_CONTRACT_ADDRESS = "0x709944a48cAf83535e43471680fDA4905FB3920a";      // API3Proxy server that will allow us to update the price feed
+
 // Your unique inputs
 const OUR_DEPLOYED_MULTICALL_CONTRACT_ADDRESS = "0xF6f7f3667Cf5A047Bd6aE7dE363642b71D188C37"; //Your smart contract deployed on ETH Sepolia network
 const PRICE = parseEther("52605");                                                        // The price point you a bidding lower or higher than
 const GREATER_OR_LOWER = "LTE";                                                           // Setting if it will be "less than or equal to" (either "LTE" or "GTE")
 const BID_AMOUNT = parseEther("0.01");                                                    // The amount of ETH you are bidding to win this auction and perform the oracle update
-const PUBLIC_ADDRESS_OF_THE_BIDDER = "0xe2b8651bF50913057fF47FC4f02A8e12146083B8";        // The wallet address if the signer doing the bid
+const PUBLIC_ADDRESS_OF_THE_BIDDER = "0xe2b8651bF50913057fF47FC4f02A8e12146083B8";        // The wallet address of the signer doing the bid
 
 // Setup our contract object for the auction house on OEV test network
 const provider = new JsonRpcProvider("https://oev-network-sepolia-testnet-rpc.eu-north-2.gateway.fm");
@@ -157,7 +158,7 @@ const placeBidWithExpiration = async () => {
   console.log("Oracle update performed");
 };
 
-// call the function
+
 placeBidWithExpiration();
 
-// This code may win the bid but there is no action after you have done it
+
