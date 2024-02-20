@@ -10,7 +10,7 @@ You can bridge from ETH Sepolia to the [OEV Network here](https://oev-network-se
 
 The bridge page also has an `Add to Metamask` option to easily add the chain to your wallet.
 
-![Add to Metamask]('readmeIMG/settings.png' "Settings")
+![Add to Metamask](images/settings.png "Settings")
 
 Once the bridging is complete, you can check your wallet to verify that you have some ETH on the OEV network.
 
