@@ -247,7 +247,7 @@ npx hardhat run scripts/submit_bid_and_update.js
 
 
 # tldr
-1. Update .env file with your personal details:
+1. Update .env file with your custom details:
 ```
 SEPOLIA_RPC_URL=https://rpc.ankr.com/eth_sepolia
 PRIVATE_KEY=
