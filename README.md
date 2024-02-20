@@ -242,3 +242,32 @@ npx hardhat run scripts/submit_bid_and_update.js
 
 ![OEV Flow](images/flow.png "OEV Flow")
 [Larger Image](https://i.imgur.com/bkPj6fw.png)
+
+
+# tldr
+1. Update .env file with your personal details:
+```
+SEPOLIA_RPC_URL=https://rpc.ankr.com/eth_sepolia
+PRIVATE_KEY=
+ETHERSCAN_API_KEY=
+```
+2. Deploy the `OevSearcherMulticallV1`
+```
+npx hardhat run scripts/deploy.js
+```
+3. Deposit bridged OEV Eth to the auctioneer contract on OEV Network
+```
+npx hardhat run scripts/deposit.js
+```
+4. Update the following information in the `submit_bid_and_update.js` script
+```
+OUR_DEPLOYED_MULTICALL_CONTRACT_ADDRESS = "Your deployed contract address on Sepolia";
+const PRICE = parseEther("52605");                 
+const GREATER_OR_LOWER = "LTE";    
+const BID_AMOUNT = parseEther("0.01");                                               
+const PUBLIC_ADDRESS_OF_THE_BIDDER = "Your public wallet address"; 
+```
+5. Run the `submit_bid_and_update.js` script
+```
+npx hardhat run scripts/submit_bid_and_update.js
+```
