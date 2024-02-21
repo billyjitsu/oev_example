@@ -243,7 +243,7 @@ npx hardhat run scripts/submit_bid_and_update.js
 ## Flow of the Auction Process
 
 ![OEV Flow](images/flow.png "OEV Flow")
-[Larger Image](https://i.imgur.com/bkPj6fw.png)
+[Larger Image](https://i.imgur.com/In6QYUz.png)
 
 
 # tldr
