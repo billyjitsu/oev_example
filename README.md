@@ -1,6 +1,6 @@
 # OEV SEARCHER BOT
 
-This repo takes you though setting up and executing a price feed searcher bot on the OEV Network allowing you to update a price feed on the ETH Sepolia test network. 
+This repo takes you through setting up and executing a price feed searcher bot on the OEV Network allowing you to update a price feed on the ETH Sepolia test network. 
 
 You will need ETH on both ETH Sepolia and the OEV Network for full functionality.
 
@@ -26,7 +26,7 @@ ETHERSCAN_API_KEY=
 ```
 
 ## Deploy Multicall Contract on Sepolia
-You will need to deploy the `OevSearcherMulticallV1` on `ETH Sepolia` in order for your wallet to be able to update the price feeds on ETH Sepolia. This smart contract will allow you to bulk multiple transactions in a single call, such as Updating the Price Feed, liquididating a position and then doing something with this value gained. (`There is no need to modify this smart contract`).  If you would like to learn more about mulitCall, read [here](https://github.com/mds1/multicall).
+You will need to deploy the `OevSearcherMulticallV1` on `ETH Sepolia` in order for your wallet to be able to update the price feeds on ETH Sepolia. This smart contract will allow you to bulk multiple transactions in a single call, such as Updating the Price Feed, liquidating a position and then doing something with this value gained. (`There is no need to modify this smart contract`).  If you would like to learn more about mulitCall, read [here](https://github.com/mds1/multicall).
 
 To deploy the `OevSearcherMulticallV1` smart contract using the deploy script.
 ```
@@ -34,7 +34,7 @@ npx hardhat run scripts/deploy.js
 ```
 
 ## Making a Bid
-In order to make a bid in the OEV Auction house.  We must deposit our OEV network ETH into the auction contract.  We call the deposit function on the OEV auction house contract.
+In order to make a bid in the OEV Auction House, we must deposit our OEV network ETH into the auction contract.  We call the deposit function on the OEV auction house contract.
 ```
 npx hardhat run scripts/deposit.js
 ```
@@ -42,9 +42,9 @@ You will see a console log of the transaction hash and a notice that the deposit
 
 Once this is completed, we are now ready to request to make a bid in the auctions.
 
-There are two ways to make the bid.  A bid `without an expiration time` and one with an `expiration time` (done this this example).
+There are two ways to make the bid.  A bid `without an expiration time` and one with an `expiration time` (done in this example).
 
-In the `auctionHouse` contract it takes in as set of parameters
+In the `auctionHouse` contract it takes in a set of parameters
 ```
         bytes32 bidTopic,
         uint256 chainId,
@@ -60,11 +60,11 @@ In the `auctionHouse` contract it takes in as set of parameters
 
 - The `bidAmount` is the amount we are willing to bid to win the auction over anybody else that may bid on the same price.
 
-- The `bidDetails` contains the Proxy address of the price feed we want to update, a condition of greater or lower than a specific price, the price we want to update at, which address will be doing the update of the price feed (our deployed multiCall address), and some padding for randomness.  This is required to be in a bytes format, so much be encoded through a function.
+- The `bidDetails` contains the Proxy address of the price feed we want to update, a condition of greater or lower than a specific price, the price we want to update at, which address will be doing the update of the price feed (our deployed multiCall address), and some padding for randomness.  This is required to be in a bytes format, so must be encoded through a function.
 
-- The `maxCollateralAmount` is the collateral you are willing to put up for your bid.  On testnet, this is 0.  Not collateral required.
+- The `maxCollateralAmount` is the collateral you are willing to put up for your bid.  On testnet, this is 0.  No collateral required.
 
-- The `maxProtocalFeeAmount` is the fee you are willing to pay back to the protocol/dapp.  On testnet, this is 0.  No Fee required.
+- The `maxProtocolFeeAmount` is the fee you are willing to pay back to the protocol/dapp.  On testnet, this is 0.  No Fee required.
 
 - The `expirationTimestamp` is how long you are willing to keep this bid.
 
@@ -186,7 +186,7 @@ const awardedTransaction = await new Promise((resolve, reject) => {
 ```
 ## Updating the oracle on the ETH Sepolia Network
 
-Once we have one the bid and have received the `awardedTransaction` details, we can now update the price feed on the ETH Sepolia network.  
+Once we have won the bid and have received the `awardedTransaction` details, we can now update the price feed on the ETH Sepolia network.  
 
 We will need to setup a contract object for the `OevSearcherMulticallV1` contract we deployed to Sepolia (the contract we deployed from out `deploy.js` script)
 ```
@@ -222,7 +222,7 @@ const multiTx = await OevSearcherMulticallV1.externalMulticallWithValue(
     }
   );
 ```
-Once the transaction has completed, we have have updated the price feed.  We can verify the pricefeed has updated by checking the event logs of our `OevSearcherMultivcallV1` contract's data section.  `value` and `timestamp` should match with the latest read update of the price feed proxy.  In this example, we should be able to read the WBTC/USD feed on Sepolia and read #4 function `read`.  The values should be the equal.
+Once the transaction has completed, we have updated the price feed.  We can verify the pricefeed has updated by checking the event logs of our `OevSearcherMultivcallV1` contract's data section.  `value` and `timestamp` should match with the latest read update of the price feed proxy.  In this example, we should be able to read the WBTC/USD feed on Sepolia and read #4 function `read`.  The values should be the equal.
 The auction and price update is completed.
 
 
