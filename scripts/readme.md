@@ -13,7 +13,7 @@ We want to keep a local database of addresses that we can quickly access to cons
 
 1. **Listen for Deposit Events**: Use ethers.js to listen to or query past `Deposit` events emitted by the lending platform's smart contract. These events indicate that a wallet has deposited assets. In most cases, we want to keep track of the addresses AND the assets deposited.  In this hackathon example, we know that the only asset being provided is the [OEV Token](https://sepolia.etherscan.io/address/0x5Df761cB11aEd75618a716e252789Cdc9280f5A6) so we won't need to keep a database of the assets
 
-2. **Store Wallet Addresses**: For simplicity and rate limiting, we have provided the deposited addresses in a [separate json](scripts/wallets/wallets.json) file for you use if necessary.  Bonus points if you write a script to pull them in your own way from the lending contract 0xEeEed4f0cE2B9fe4597b6c99eD34D202b4C03052 
+2. **Store Wallet Addresses**: For simplicity and rate limiting, we have provided the deposited addresses in a [separate json](wallets/wallets.json) file for you use if necessary.  Bonus points if you write a script to pull them in your own way from the lending contract 0xEeEed4f0cE2B9fe4597b6c99eD34D202b4C03052 
 
 ## Step 2: Monitoring Health Factors
 
