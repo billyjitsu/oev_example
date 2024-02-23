@@ -94,5 +94,6 @@ Alternately, we can check on bidId statuses by check on the auctionHouse contrac
 3. **Risk Management**: Always consider the risks involved in liquidation, including potential price slippage and gas costs.
 
 ## Flow of the Process
-
+![Liquidation Flow](/images/liquidflow.png "Liquidation Flow")
+[Larger Image](https://i.imgur.com/kb7ZA7K.png)
 
