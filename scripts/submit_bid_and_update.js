@@ -16,7 +16,7 @@ const OevAuctionHouseAbi = require("./contractABIs/OevAuctionHouseABI.json");
 /**
  * Constants
  **/
-const OEV_AUCTION_HOUSE_CONTRACT_ADDRESS = "0x7597985630674dA4D62Ae60ad4D10E40bb619B08";  // On OEV testnet
+const OEV_AUCTION_HOUSE_CONTRACT_ADDRESS = "0x34f13A5C0AD750d212267bcBc230c87AEFD35CC5";  // On OEV testnet
 const CHAIN_ID = 11155111;                                                                // ETH Sepolia chain ID                    
 const WBTC_USD_PROXY_ADDRESS = "0xa8cea58ab9060600e94bb28b2c8510b73171b55c";              // ETH Sepolia WBTC/USD price feed
 const API3SERVER_V1_CONTRACT_ADDRESS = "0x709944a48cAf83535e43471680fDA4905FB3920a";      // API3Proxy server that will allow us to update the price feed
